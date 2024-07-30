@@ -114,12 +114,9 @@
 
 /* 自定义滚动条样式 */
 .messages-container {
-  @apply max-h-[calc(100vh-200px)] overflow-y-auto pr-4;
+  @apply max-h-[calc(100vh-225px)] overflow-y-auto;
 }
 
-.messages-container::-webkit-scrollbar {
-  @apply w-2;
-}
 
 .messages-container::-webkit-scrollbar-track {
   @apply bg-gray-200 rounded-full;
@@ -189,7 +186,8 @@ function showHelpModal() {
 
 onMounted(() => {
   loadApiSettings();
-  fetchAndSetBackgroundImage();
+  // fetchAndSetBackgroundImage();
+  setBackgroundImage(import.meta.env.VITE_WALLPAPER_URL)
   //移除所有span的anticon类
 });
 
@@ -275,13 +273,13 @@ async function pasteClipboard() {
 }
 
 const downloadWallpaper = () => {
-  if (!wallpaperBase64.value) {
-    message.error('壁纸加载失败，或CORS跨域错误');
-    return;
-  }
+  // if (!wallpaperBase64.value) {
+  //   message.error('壁纸加载失败，或CORS跨域错误');
+  //   return;
+  // }
 
   const link = document.createElement('a');
-  link.href = wallpaperBase64.value;
+  link.href = import.meta.env.VITE_WALLPAPER_URL;
   link.download = 'wallpaper.jpg';
   document.body.appendChild(link);
   link.click();
