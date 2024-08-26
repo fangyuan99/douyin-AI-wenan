@@ -74,6 +74,11 @@
             size="small"
             class="mt-2"
         >Copy Markdown</a-button>
+        <a-button
+            v-if="message.type === 'ai'"
+            @click="pushToMemos(message.text)"
+            size="small"
+        >Push to Memos</a-button>
       </a-card>
     </div>
 
@@ -262,6 +267,34 @@ function copyMarkdown(text) {
       message.error(`写入剪贴板失败\n${err}`);
     });
 }
+
+const pushToMemos = async (content) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Authorization", `Bearer ${import.meta.env.VITE_MEMOS_KEY}`);
+
+  const raw = JSON.stringify({
+    "content": `#DOUYIN\n${content}`,
+    // Memos可见性，默认是PRIVATE
+    // "visibility": "PUBLIC"
+  });
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_MEMOS_URL}/api/v1/memos`, requestOptions);
+    const result = await response.text();
+    console.log(result);
+    message.success("成功发送到Memos");
+  } catch (error) {
+    console.error('error', error);
+    message.error("发送到Memos失败");
+  }
+};
 
 async function pasteClipboard() {
   try {
