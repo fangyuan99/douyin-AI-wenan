@@ -37,10 +37,16 @@
               placeholder="Enter OpenAI API Key"
           />
         </a-form-item>
-        <a-form-item label="Model 1 (Lists split using ,)">
+        <a-form-item label="COZE Token">
+          <a-input-password
+              v-model:value="token"
+              placeholder="COZE Token"
+          />
+        </a-form-item>
+        <a-form-item label="Workflow id">
           <a-input
-              v-model:value="model1"
-              placeholder="Enter Model 1 (Lists split using ,)"
+              v-model:value="workflowId"
+              placeholder="coze.cn workflow id"
           />
         </a-form-item>
         <a-form-item label="Model 2 (Lists split using ,)">
@@ -168,10 +174,13 @@ const md = new MarkdownIt();
 const userInput = ref("");
 const messages = ref([]);
 const apiKey = ref(import.meta.env.VITE_API_KEY);
+const token = ref(import.meta.env.VITE_TOKEN)
+// console.log(token)
+const workflowId = ref(import.meta.env.VITE_WORKFLOW_ID)
 const apiUrl = ref(import.meta.env.VITE_API_URL);
 const showApiSettings = ref(false);
 const isLoading = ref(false);
-const model1 = ref(import.meta.env.VITE_DEFAULT_MODEL1);
+// const model1 = ref(import.meta.env.VITE_DEFAULT_MODEL1);
 const model2 = ref(import.meta.env.VITE_DEFAULT_MODEL2);
 const wallpaperBase64 = ref('');
 const helpModalVisible = ref(false);
@@ -242,18 +251,21 @@ function toggleApiSettings() {
 function saveApiSettings() {
   localStorage.setItem("apiKey", apiKey.value);
   localStorage.setItem("apiUrl", apiUrl.value);
-  localStorage.setItem("model1", model1.value);
+  localStorage.setItem("workflowId", token.value);
+  localStorage.setItem("token", token.value);
   localStorage.setItem("model2", model2.value);
 }
 
 function loadApiSettings() {
   const savedApiKey = localStorage.getItem("apiKey");
   const savedApiUrl = localStorage.getItem("apiUrl");
-  const savedModel1 = localStorage.getItem("model1");
+  const savedToken = localStorage.getItem("token");
+  const savedWorkflowId = localStorage.getItem("workflowId");
   const savedModel2 = localStorage.getItem("model2");
   if (savedApiKey) apiKey.value = savedApiKey;
   if (savedApiUrl) apiUrl.value = savedApiUrl;
-  if (savedModel1) model1.value = savedModel1;
+  if (savedWorkflowId) workflowId.value= savedWorkflowId;
+  if (savedToken) token.value = savedToken;
   if (savedModel2) model2.value = savedModel2;
 }
 
@@ -331,49 +343,39 @@ const sendMessage = async () => {
   const userMessage = userInput.value;
   userInput.value = "";
 
-  const models1 = model1.value.split(",").map((m) => m.trim());
+  // const models1 = model1.value.split(",").map((m) => m.trim());
   const models2 = model2.value.split(",").map((m) => m.trim());
 
   try {
     // First request: non-streaming
-    let response1, model1Used;
-    for (const model of models1) {
-      try {
-        const payload1 = {
-          model: model,
-          messages: [{ role: "user", content: userMessage }],
-        };
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${token.value}`);
+    myHeaders.append("Content-Type", "application/json");
 
-        const headers = {
-          Authorization: `Bearer ${apiKey.value}`,
-          "Content-Type": "application/json",
-        };
 
-        response1 = await fetch(apiUrl.value, {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify(payload1),
-        });
-
-        if (response1.ok) {
-          model1Used = model;
-          break;
-        }
-      } catch (error) {
-        console.error(`Error with model ${model}:`, error);
+    var raw = JSON.stringify({
+      "workflow_id": workflowId.value,
+      "parameters": {
+        "BOT_USER_INPUT": userMessage
       }
-    }
+    });
 
-    if (!response1 || !response1.ok) {
-      throw new Error("All models for the first request failed");
-    }
-
-    const responseData1 = await response1.json();
-    const resultContent = responseData1.choices[0].message.content;
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+    let res = await (await fetch("https://api.coze.cn/v1/workflow/run", requestOptions)).json()
+    let data = JSON.parse(res.data)
+    // console.log(data)
+    let data2 = JSON.parse(data.data)
+    // console.log(data2)
+    let resultContent = data2.content
+    // console.log(resultContent)
 
     // Extract the specific part from the result
     const extractedContent = resultContent
-      .split('content":"**')[1]
       .split("**视频或图片OCR文本")[0];
 
     // Second request: streaming
@@ -435,7 +437,7 @@ const sendMessage = async () => {
                     id: Date.now(),
                     text: aiMessage,
                     type: "ai",
-                    model: `${model1Used} -> ${model2Used}`,
+                    model: `${model2Used}`,
                   });
                 }
               }
