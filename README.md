@@ -21,7 +21,8 @@ Douyin AI Wenan 是一个基于`Vue 3`和`coze`的智能文案处理工作流。
 
 ## 部署
 
-**注意，你需要有一个可以提供`coze`以及大语言模型的api**
+- **注意，你需要有一个可以提供`coze`以及大语言模型的api**
+- **支持直接解析口令、链接**
 
 点击下面的按钮可以快速将项目部署到Vercel
 
@@ -30,11 +31,17 @@ Douyin AI Wenan 是一个基于`Vue 3`和`coze`的智能文案处理工作流。
 
 ### coze工作流设置(由于官方有使用次数限制，推荐自建)
 
+![image](https://github.com/user-attachments/assets/447e5f4b-3371-492b-81af-6f8a4e139c7c)
+
+
 1. 进入 https://www.coze.cn 的个人空间-工作流-创建工作流
 
 2. 搭建工作流
    - 把开始节点的变量按图调整
+   ![image](https://github.com/user-attachments/assets/c997acb2-545a-4df8-94b1-e5ff7a526d64)
+
    - 新建一个代码节点(输入引用开始，输出key0)
+     ![image](https://github.com/user-attachments/assets/224a2865-9835-4396-ba6a-b2ad80d9596d)
     ```js
     async function main({ params }) {
         // 正则表达式用于匹配URL
@@ -53,10 +60,13 @@ Douyin AI Wenan 是一个基于`Vue 3`和`coze`的智能文案处理工作流。
     ```
 3. 添加插件获取抖音文案
 添加一个`LinkReaderPlugin`插件
+![image](https://github.com/user-attachments/assets/b34cd491-23e1-49f1-9027-44d42bf49125)
 
 4. 结束、试运行、发布、记录工作流ID
+![image](https://github.com/user-attachments/assets/3e676b4b-c4d0-41e5-9c3f-13dd2e189073)
 
-**支持直接解析口令、链接**
+5. 在 https://www.coze.cn/open/api 创建个人令牌，勾选工作流权限，保存token
+   ![image](https://github.com/user-attachments/assets/66227a9a-6ff6-4977-b98e-d0a1c3d46f03)
 
 ### 设置环境变量
 
