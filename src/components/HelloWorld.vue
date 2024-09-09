@@ -202,7 +202,16 @@ onMounted(() => {
   loadApiSettings();
   // fetchAndSetBackgroundImage();
   setBackgroundImage(import.meta.env.VITE_WALLPAPER_URL)
-  //移除所有span的anticon类
+  // 对href url 解析
+  let url = window.location.href
+  // 给网址解码
+  url = decodeURIComponent(url)
+  let reg = /https:\/\/v.douyin.com\/[a-zA-Z0-9]+/g
+  let queryInput = url.match(reg)[0] + '/'
+  if (queryInput) {
+    userInput.value = queryInput;
+    sendMessage();
+  }
 });
 
 async function fetchAndSetBackgroundImage() {
@@ -251,7 +260,7 @@ function toggleApiSettings() {
 function saveApiSettings() {
   localStorage.setItem("apiKey", apiKey.value);
   localStorage.setItem("apiUrl", apiUrl.value);
-  localStorage.setItem("workflowId", token.value);
+  localStorage.setItem("workflowId", workflowId.value);
   localStorage.setItem("token", token.value);
   localStorage.setItem("model2", model2.value);
 }
