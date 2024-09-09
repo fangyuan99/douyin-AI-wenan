@@ -23,23 +23,53 @@ Douyin AI Wenan 是一个基于`Vue 3`和`coze`的智能文案处理工作流。
 
 **注意，你需要有一个可以提供`coze`以及大语言模型的api**
 
-可以参考这个[帖子](https://linux.do/t/topic/125956)搭建
-
 点击下面的按钮可以快速将项目部署到Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffangyuan99%2Fdouyin-ai-wenan&env=VITE_API_KEY&env=VITE_API_URL&env=VITE_DEFAULT_MODEL1&env=VITE_DEFAULT_MODEL2&env=VITE_WALLPAPER_URL&env=VITE_MEMOS_URL&env=VITE_MEMOS_KEY&project-name=douyin-ai-wenan&repository-name=douyin-ai-wenan)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffangyuan99%2Fdouyin-ai-wenan&env=VITE_API_KEY&env=VITE_API_URL&env=VITE_TOKEN&env=VITE_WORKFLOW_ID&env=VITE_DEFAULT_MODEL2&env=VITE_WALLPAPER_URL&env=VITE_MEMOS_URL&env=VITE_MEMOS_KEY&project-name=douyin-ai-wenan&repository-name=douyin-ai-wenan)
 
-设置环境变量
 
-| 环境变量                   | 描述                                                         |
-|------------------------|------------------------------------------------------------|
-| VITE_API_KEY           | OpenAI API密钥                                               |
+### coze工作流设置(由于官方有使用次数限制，推荐自建)
+
+1. 进入 https://www.coze.cn 的个人空间-工作流-创建工作流
+
+2. 搭建工作流
+   - 把开始节点的变量按图调整
+   - 新建一个代码节点(输入引用开始，输出key0)
+    ```js
+    async function main({ params }) {
+        // 正则表达式用于匹配URL
+        const urlPattern = /https?:\/\/[^\s]+/g;
+        // 从输入文本中提取所有URL
+        const urls = params.input.match(urlPattern);
+    
+        // 如果没有找到URL，返回空字符串；否则返回第一个找到的URL
+        const extractedUrl = urls ? urls[0] : '';
+    
+        const ret = {
+            "key0": extractedUrl,
+        };
+        return ret;
+    }
+    ```
+3. 添加插件获取抖音文案
+添加一个`LinkReaderPlugin`插件
+
+4. 结束、试运行、发布、记录工作流ID
+
+**支持直接解析口令、链接**
+
+### 设置环境变量
+
+| 环境变量                   | 描述                                                             |
+|------------------------|----------------------------------------------------------------|
+| VITE_API_KEY           | OpenAI API密钥                                                   |
 | VITE_API_URL           | OpenAI API的URL,如: `https://api.openai.com/v1/chat/completions` |
-| VITE_DEFAULT_MODEL1    | 第一组模型,用于获取抖音文案,用逗号分隔,如: `coze`                             |
-| VITE_DEFAULT_MODEL2    | 第二组模型,用于修正文案,用逗号分隔,如: `gpt-4,gpt-4o-mini`                  |
-| VITE_MEMOS_URL(可选)     | Memos的主URL，如: `https://demo.usememos.com`                  |
-| VITE_MEMOS_KEY(可选)     | Memos的账号信息里面申请token(ey开头),如: `eyJhbGc...`                  |
-| VITE_WALLPAPER_URL(可选) | 背景壁纸的URL(注意要支持CORS跨域，否则不能下载)                               |
+| VITE_TOKEN    | coze.cn的token（注意开放工作流权限）                                       |
+| VITE_WORKFLOW_ID    | 工作流ID                                                          |
+| VITE_DEFAULT_MODEL2    | 第二组模型,用于修正文案,用逗号分隔,如: `gpt-4,gpt-4o-mini`                      |
+| VITE_MEMOS_URL(可选)     | Memos的主URL，如: `https://demo.usememos.com`                      |
+| VITE_MEMOS_KEY(可选)     | Memos的账号信息里面申请token(ey开头),如: `eyJhbGc...`                      |
+| VITE_WALLPAPER_URL(可选) | 背景壁纸的URL(注意要支持CORS跨域，否则不能下载)                                   |
 
 这里提供了一个公共账号用于测试，**推荐使用自建**
 
@@ -61,21 +91,19 @@ eyJhbGciOiJIUzI1NiIsImtpZCI6InYxIiwidHlwIjoiSldUIn0.eyJuYW1lIjoiRG91eWluQUlXZW5h
 - Tailwind CSS
 - Ant Design Vue
 - OpenAI API
+- Coze API
 - Memos API
 
 ## 从源码编译
 
 1. 克隆仓库：
-git clone https://github.com/fangyuan99/douyin-ai-wenan.git
-
+`git clone https://github.com/fangyuan99/douyin-ai-wenan.git`
 
 2. 进入项目目录：
-cd douyin-ai-wenan
-
+`cd douyin-ai-wenan`
 
 3. 安装依赖：
-pnpm install
-
+`pnpm install`
 
 4. 创建`.env`文件并设置必要的环境变量（参考`.env.production`）
 
@@ -84,7 +112,6 @@ pnpm install
 
 1. 启动开发服务器：
 pnpm run dev
-
 
 2. 在浏览器中打开显示的URL（通常是 `http://localhost:5173`）
 
@@ -95,14 +122,6 @@ pnpm run dev
 5. 等待AI处理并返回修正后的文本
 
 6. 使用`Copy Markdown`按钮复制修正后的文本,使用`Push to Memos`按钮将文本推送到Memos
-
-## 自定义设置
-
-点击设置图标可以自定义以下选项：
-- API URL
-- API Key
-- Model 1 和 Model 2 的选项列表
-
 
 ## 贡献
 
